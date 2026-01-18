@@ -14,3 +14,4 @@ root.render(
     <App offersCount={OFFERS_COUNT} />
   </React.StrictMode>
 );
+
