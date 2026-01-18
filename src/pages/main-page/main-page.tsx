@@ -1,33 +1,33 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import OfferCard from '../../components/offer-card-list/offer-card';
 import { Offer } from '../../shared/entities/offer/types';
+import OffersList from '../../components/offer-card-list/offer-card-list';
 
-function MainPage() {
-  // Данные предложений с правильной структурой
-  const offers: Offer[] = [
-    {
-      id: '1',
-      title: 'Beautiful & luxurious apartment at great location',
-      type: 'Apartment',
-      price: 120,
-      city: 'Amsterdam', // string, не объект
-      location: {
-        latitude: 52.3909553943508,
-        longitude: 4.85309666406198,
-        zoom: 10,
-      },
-      rating: 4.8,
-      previewImage: 'img/apartment-01.jpg',
-      isPremium: true,
-      isFavorite: false
-    },
-    // ... (остальные offers без изменений)
-  ];
+interface MainPageProps {
+  offers: Offer[];
+}
 
-  const offersCount = offers.length;
+function MainPage({ offers }: MainPageProps) {
+  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const cityOffers = offers.filter((offer) => offer.city === 'Amsterdam');
+  const offersCount = cityOffers.length;
+  const favoriteCount = offers.filter((o) => o.isFavorite).length;
+
+  const handleCardHover = (offerId: string | null) => {
+    setActiveCardId(offerId);
+  };
+
+  // ✅ Используем activeCardId для поиска активного предложения
+  const activeOffer = cityOffers.find((offer) => offer.id === activeCardId);
 
   return (
     <div className="page page--gray page--main">
+      {/* ✅ Скрытый div с информацией об активной карточке */}
+      <div style={{ display: 'none' }}>
+        Active card ID: {activeCardId || 'none'}
+        {activeOffer && ` - ${activeOffer.title}`}
+      </div>
+
       <header className="header">
         <div className="container">
           <div className="header__wrapper">
@@ -42,7 +42,7 @@ function MainPage() {
                   <Link to="/favorites" className="header__nav-link header__nav-link--profile">
                     <div className="header__avatar-wrapper user__avatar-wrapper"></div>
                     <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
-                    <span className="header__favorite-count">3</span>
+                    <span className="header__favorite-count">{favoriteCount}</span>
                   </Link>
                 </li>
                 <li className="header__nav-item">
@@ -108,11 +108,9 @@ function MainPage() {
                   </svg>
                 </span>
               </form>
-              <div className="cities__places-list places__list tabs__content">
-                {offers.map((offer) => (
-                  <OfferCard key={offer.id} offer={offer} />
-                ))}
-              </div>
+
+              <OffersList offers={cityOffers} onCardHover={handleCardHover} />
+
             </section>
             <div className="cities__right-section">
               <section className="cities__map map"></section>
