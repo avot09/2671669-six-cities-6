@@ -1,5 +1,5 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import OfferCard from '../../components/offer-card-list/offer-card';
 import { Offer } from '../../shared/entities/offer/types';
 import { CityName } from '../../shared/entities/city/types';
 import Map from '../../components/map/map';
@@ -95,6 +95,12 @@ function MainPage() {
 
   return (
     <div className="page page--gray page--main">
+      {/* ✅ Скрытый div с информацией об активной карточке */}
+      <div style={{ display: 'none' }}>
+        Active card ID: {activeCardId || 'none'}
+        {activeOffer && ` - ${activeOffer.title}`}
+      </div>
+
       <header className="header">
         <div className="container">
           <div className="header__wrapper">
@@ -109,7 +115,7 @@ function MainPage() {
                   <Link to="/favorites" className="header__nav-link header__nav-link--profile">
                     <div className="header__avatar-wrapper user__avatar-wrapper"></div>
                     <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
-                    <span className="header__favorite-count">3</span>
+                    <span className="header__favorite-count">{favoriteCount}</span>
                   </Link>
                 </li>
                 <li className="header__nav-item">
@@ -196,3 +202,4 @@ function MainPage() {
 }
 
 export default MainPage;
+

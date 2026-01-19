@@ -1,21 +1,37 @@
 import { Link } from 'react-router-dom';
-import { Offer } from '../../shared/entities/offer/types'; // Adjust path if necessary
+import { Offer } from '../../shared/entities/offer/types';
 
 interface OfferCardProps {
   offer: Offer;
+  isActive?: boolean;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  cardClassName?: string;
+  imageWrapperClassName?: string;
 }
 
-const OfferCard = ({ offer }: OfferCardProps) => {
+const OfferCard = ({
+  offer,
+  isActive = false,
+  onMouseEnter,
+  onMouseLeave,
+  cardClassName = 'cities__card',
+  imageWrapperClassName = 'cities__image-wrapper'
+}: OfferCardProps) => {
   const { id, title, type, price, rating, previewImage, isPremium, isFavorite } = offer;
 
   return (
-    <article className="cities__card place-card">
+    <article
+      className={`${cardClassName} place-card ${isActive ? 'place-card--active' : ''}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {isPremium && (
         <div className="place-card__mark">
           <span>Premium</span>
         </div>
       )}
-      <div className="cities__image-wrapper place-card__image-wrapper">
+      <div className={`${imageWrapperClassName} place-card__image-wrapper`}>
         <Link to={`/offer/${id}`}>
           <img
             className="place-card__image"
@@ -30,7 +46,7 @@ const OfferCard = ({ offer }: OfferCardProps) => {
         <div className="place-card__price-wrapper">
           <div className="place-card__price">
             <b className="place-card__price-value">&euro;{price}</b>
-            <span className="place-card__price-text">&#47;&nbsp;night</span>
+            <span className="place-card__price-text">/ night</span>
           </div>
           <button
             className={`place-card__bookmark-button button ${isFavorite ? 'place-card__bookmark-button--active' : ''}`}
