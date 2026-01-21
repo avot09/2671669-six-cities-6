@@ -1,19 +1,22 @@
-import {FC} from 'react';
-import {OffersByCity} from '../../shared/entities/offer/types.ts';
-import {useAppSelector} from '../../shared/redux-helpers/typed-hooks.ts';
-import {FavoriteOfferCardList} from './cards/favorite-offer-card-list.tsx';
+import {FC, useEffect, useMemo} from 'react';
+import {NavLink} from 'react-router-dom';
+import {HeaderLogoLink} from '../../components/shared/header-logo-link/header-logo-link.tsx';
+import {HeaderUserInfo} from '../../components/shared/header-user-info/header-user-info.tsx';
+import {groupOffersByCity} from '../../shared/entities/offer/data-mappers.ts';
+import {RoutePath} from '../../shared/enums/routes.ts';
+import {useAppDispatch, useAppSelector} from '../../shared/redux-helpers/typed-hooks.ts';
+import {loadFavorites} from '../../slices/favorites-page-slice/favorites-page-slice.ts';
+import {FavoriteOfferCardList} from './favorite-offer-card-list/favorite-offer-card-list.tsx';
+import {FavoritesEmpty} from './favorites-empty.tsx';
 
 export const FavoritesPage: FC = () => {
-  const offers = useAppSelector((state) => state.offers.offers);
+  const dispatch = useAppDispatch();
+  const offers = useAppSelector((state) => state.favoritesPage.favorites);
+  const offersByCity = useMemo(() => groupOffersByCity(offers), [offers]);
 
-  let favoritesCounter = 0;
-  const favorites: OffersByCity = Object.entries(structuredClone(offers)).reduce((
-    favByCity, [city, cityOffers]
-  ) => {
-    favByCity[city] = cityOffers.filter((offer) => offer.isFavorite);
-    favoritesCounter += favByCity[city].length;
-    return favByCity;
-  }, {} as OffersByCity);
+  useEffect(() => {
+    dispatch(loadFavorites());
+  }, [dispatch]);
 
   return (
     <div className="page">
@@ -21,43 +24,27 @@ export const FavoritesPage: FC = () => {
         <div className="container">
           <div className="header__wrapper">
             <div className="header__left">
-              <a className="header__logo-link" href="main.html">
-                <img className="header__logo" src="img/logo.svg" alt="6 cities logo" width="81" height="41"/>
-              </a>
+              <HeaderLogoLink/>
             </div>
-            <nav className="header__nav">
-              <ul className="header__nav-list">
-                <li className="header__nav-item user">
-                  <a className="header__nav-link header__nav-link--profile" href="#">
-                    <div className="header__avatar-wrapper user__avatar-wrapper">
-                    </div>
-                    <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
-                    <span className="header__favorite-count">3</span>
-                  </a>
-                </li>
-                <li className="header__nav-item">
-                  <a className="header__nav-link" href="#">
-                    <span className="header__signout">Sign out</span>
-                  </a>
-                </li>
-              </ul>
-            </nav>
+            <HeaderUserInfo/>
           </div>
         </div>
       </header>
+
       <main className="page__main page__main--favorites">
         <div className="page__favorites-container container">
-          <section className="favorites">
-            <h1 className="favorites__title">Saved listing</h1>
-            {favoritesCounter === 0 && <p>You have not bookmarked any offers yet</p>}
-            <FavoriteOfferCardList offers={favorites}/>
-          </section>
+          {offers.length === 0 ? <FavoritesEmpty/> : (
+            <section className="favorites">
+              <h1 className="favorites__title">Saved listing</h1>
+              <FavoriteOfferCardList offers={offersByCity}/>
+            </section>
+          )}
         </div>
       </main>
       <footer className="footer container">
-        <a className="footer__logo-link" href="main.html">
+        <NavLink className="footer__logo-link" to={'/' + RoutePath.MainPage}>
           <img className="footer__logo" src="img/logo.svg" alt="6 cities logo" width="64" height="33"/>
-        </a>
+        </NavLink>
       </footer>
     </div>
   );

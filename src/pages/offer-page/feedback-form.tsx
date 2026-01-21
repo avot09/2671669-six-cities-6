@@ -60,13 +60,11 @@ export const FeedbackForm: FC<FeedbackFormProps> = ({offerId}) => {
     };
   }, [dispatch, postingState, setRating, setCommentText]);
 
-  const isFormDisabled = postingState === RequestStatus.pending;
-
   return (
     <form
       className="reviews__form form"
       onSubmit={handleFormSubmit}
-      aria-disabled={isFormDisabled}
+      data-inert={postingState === RequestStatus.pending ? '' : undefined}
     >
       <label className="reviews__label form__label" htmlFor="review">Your review</label>
       <div className="reviews__rating-form form__rating">
@@ -80,7 +78,6 @@ export const FeedbackForm: FC<FeedbackFormProps> = ({offerId}) => {
               checked={starCount === rating}
               className="form__rating-input visually-hidden"
               onChange={handleStarClick}
-              disabled={isFormDisabled}
             />
             <label
               htmlFor={`${starCount}-stars`}
@@ -101,7 +98,6 @@ export const FeedbackForm: FC<FeedbackFormProps> = ({offerId}) => {
         placeholder="Tell how was your stay, what you like and what can be improved"
         onInput={handleReviewInput}
         value={comment}
-        disabled={isFormDisabled}
       >
       </textarea>
       <div className="reviews__button-wrapper">
@@ -111,9 +107,9 @@ export const FeedbackForm: FC<FeedbackFormProps> = ({offerId}) => {
         <button
           className="reviews__submit form__submit button"
           type="submit"
-          disabled={isSubmitDisabled || isFormDisabled}
+          disabled={isSubmitDisabled}
         >
-          {isFormDisabled ? 'Submitting...' : 'Submit'}
+          Submit
         </button>
       </div>
       {postingError && (

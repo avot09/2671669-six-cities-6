@@ -24,7 +24,7 @@ const initialState: CurrentUserState = {
 };
 
 export const checkUserLogin = createAppThunk(
-  `${ReducerName.currentUser }/checkUserLogin`,
+  ReducerName.currentUser + '/checkUserLogin',
   async (token: string, thunkApi) => {
     try {
       const response = await thunkApi.extra.axios.get<AuthSuccessResultDto>(userUrl.login, {
@@ -38,7 +38,7 @@ export const checkUserLogin = createAppThunk(
 );
 
 export const userLogin = createAppThunk(
-  `${ReducerName.currentUser }/login`,
+  ReducerName.currentUser + '/login',
   async (body: LoginRequestBody, thunkApi) => {
     try {
       const response = await thunkApi.extra.axios.post<AuthSuccessResultDto>(userUrl.login, body);
@@ -49,7 +49,7 @@ export const userLogin = createAppThunk(
   }
 );
 
-export const userLogout = createAppThunk(`${ReducerName.currentUser }/logout`, async (_, thunkApi) => {
+export const userLogout = createAppThunk(ReducerName.currentUser + '/logout', async (_, thunkApi) => {
   try {
     const response = await thunkApi.extra.axios.delete<void>(userUrl.logout);
     return response.data;

@@ -10,6 +10,7 @@ export const axiosClient = axios.create({
 });
 
 export const setupAxiosInterceptors = (store: AppStore, axiosInstance: AxiosInstance) => {
+  // interceptor to add user token to requests
   axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     const state = store.getState();
     const token = state.currentUser.userData?.token;
@@ -21,6 +22,7 @@ export const setupAxiosInterceptors = (store: AppStore, axiosInstance: AxiosInst
     return config;
   });
 
+  // interceptor to catch some errors on response
   axiosInstance.interceptors.response.use((r) => r, (error: AxiosError) => {
     if (error.code === 'ERR_NETWORK') {
       showErrorNotification('Connection error');
@@ -41,7 +43,7 @@ export const userUrl = {
 
 export const offersUrl = {
   offers: '/offers',
-  offer: (offerId: string) => `/offers/${ offerId}`,
+  offer: (offerId: string) => '/offers/' + offerId,
   nearby: (offerId: string) => `/offers/${offerId}/nearby`,
 };
 
@@ -56,6 +58,6 @@ export const favoritesUrl = {
 };
 
 export const commentsUrl = {
-  comments: (offerId: string) => `/comments/${ offerId}`,
-  addComment: (offerId: string) => `/comments/${ offerId}`,
+  comments: (offerId: string) => '/comments/' + offerId,
+  addComment: (offerId: string) => '/comments/' + offerId,
 };

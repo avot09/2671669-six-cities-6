@@ -1,50 +1,52 @@
-import React, { useState } from 'react';
-import { SelectorOption } from './model/types';
+import React, {FC, MouseEventHandler, ReactNode, useRef, useState} from 'react';
+import {useOutsideClick} from '../../hooks/use-outside-click/use-outside-click.ts';
+import {SelectorOption} from './model/types.ts';
 
-// Добавьте типы пропсов
-interface SelectorWidgetProps {
+type SelectorWidgetProps = {
   options: SelectorOption[];
-  activeOptionKey: string;
-  children: React.ReactNode;
-  onSelect: (key: string) => void;
-}
+  activeOptionKey: SelectorOption['key'];
+  children?: ReactNode;
+  onSelect?: (option: SelectorOption['key']) => void;
+};
 
-export const SelectorWidget: React.FC<SelectorWidgetProps> = ({
-  options,
-  activeOptionKey,
-  children,
-  onSelect,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
+const optionClasses = 'places__option';
+const activeOptionClasses = `${optionClasses} places__option--active`;
 
-  const activeOption = options.find((option) => option.key === activeOptionKey) ?? options[0];
+export const SelectorWidget: FC<SelectorWidgetProps> = React.memo(({options, activeOptionKey, children, onSelect}) => {
+  const expandRef = useRef<HTMLUListElement | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleSelect = (key: string) => {
-    onSelect(key);
-    setIsOpen(false);
+  useOutsideClick(expandRef, () => setIsExpanded(false));
+
+  const selected = options.find((opt) => opt.key === activeOptionKey);
+
+  const handleClickOpener: MouseEventHandler = (event) => {
+    event.stopPropagation();
+    setIsExpanded((prev) => !prev);
+  };
+
+  const handleSelectOption = (optionKey: SelectorOption['key']) => {
+    onSelect?.(optionKey);
+    setIsExpanded(false);
   };
 
   return (
     <form className="places__sorting" action="#" method="get">
       <span className="places__sorting-caption">{children}</span>
-      <span
-        className="places__sorting-type"
-        tabIndex={0}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {activeOption.value}
+      <span className="places__sorting-type" tabIndex={0} onClick={handleClickOpener}>
+        {selected?.value}
         <svg className="places__sorting-arrow" width="7" height="4">
           <use xlinkHref="#icon-arrow-select"></use>
         </svg>
       </span>
-      {isOpen && (
-        <ul className="places__options places__options--custom places__options--opened">
+      {isExpanded && (
+        <ul ref={expandRef} className="places__options places__options--custom places__options--opened">
           {options.map((option) => (
             <li
               key={option.key}
-              className={`places__option ${option.key === activeOptionKey ? 'places__option--active' : ''}`}
+              className={option.key === activeOptionKey ? activeOptionClasses : optionClasses}
               tabIndex={0}
-              onClick={() => handleSelect(option.key)}
+              onClick={() => handleSelectOption(option.key)}
             >
               {option.value}
             </li>
@@ -53,4 +55,6 @@ export const SelectorWidget: React.FC<SelectorWidgetProps> = ({
       )}
     </form>
   );
-};
+});
+
+SelectorWidget.displayName = 'SelectorWidget';

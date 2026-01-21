@@ -1,37 +1,48 @@
-import {FC, useState} from 'react';
-import {Offer} from '../../shared/entities/offer/types.ts';
+import React, {FC, useCallback} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {OfferCardList} from '../../components/offer-card-list/offer-card-list.tsx';
-import {setActiveOffer} from '../../slices/offers-slice/offers-slice.ts';
-import {useAppDispatch, useAppSelector} from '../../shared/redux-helpers/typed-hooks.ts';
-import {PointOnMap} from '../../components/map/model/types.ts';
-import {MapWidget} from '../../components/map/map.tsx';
 import {SelectorOption} from '../../components/selector-widget/model/types.ts';
 import {SelectorWidget} from '../../components/selector-widget/selector-widget.tsx';
+import {DEFAULT_CITY} from '../../shared/entities/city/constants.ts';
+import {OfferSortOption} from '../../shared/entities/offer/constants.ts';
+import {Offer} from '../../shared/entities/offer/types.ts';
+import {RoutePath} from '../../shared/enums/routes.ts';
+import {useAppDispatch, useAppSelector} from '../../shared/redux-helpers/typed-hooks.ts';
+import {FavoriteStatus} from '../../shared/server/constants.ts';
+import {changeFavoriteStatus} from '../../slices/favorites-page-slice/favorites-page-slice.ts';
+import {setActiveOffer, setOffersSort} from '../../slices/offers-slice/offers-slice.ts';
+import {MapWrapper} from './map-wrapper.tsx';
 
 const sortOptions: SelectorOption[] = [
-  {key: 'popular', value: 'Popular'},
-  {key: 'price_LtH', value: 'Price: low to high'},
-  {key: 'price_HtL', value: 'Price: high to low'},
-  {key: 'topRated', value: 'Top rated first'},
-];
+  {key: OfferSortOption.popular, value: 'Popular'},
+  {key: OfferSortOption.price_LtH, value: 'Price: low to high'},
+  {key: OfferSortOption.price_HtL, value: 'Price: high to low'},
+  {key: OfferSortOption.topRated, value: 'Top rated first'},
+] satisfies Array<{key: OfferSortOption; value: string}>;
 
-export const PlacesContainer: FC = () => {
+export const PlacesContainer: FC = React.memo(() => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const currentCity = useAppSelector((state) => state.offers.currentCity);
+  const currentCity = useAppSelector((state) => state.offers.cities[state.offers.currentCity]) ?? DEFAULT_CITY;
   const offers = useAppSelector((state) => state.offers.currentCityOffers);
-  const activeOfferId = useAppSelector((state) => state.offers.activeOfferId);
+  const sort = useAppSelector((state) => state.offers.sortOption);
+  const isAuthorized = useAppSelector((state) => !!state.currentUser.userData);
 
-  const [sort, setSort] = useState<SelectorOption['key']>(sortOptions[0].key);
-
-  const handleOfferHover = (offerId: Offer['id']) => {
+  const handleOfferHover = useCallback((offerId: Offer['id']) => {
     dispatch(setActiveOffer(offerId));
-  };
+  }, [dispatch]);
 
-  const markers: PointOnMap[] = offers.map((offer) => ({
-    id: offer.id,
-    coordinates: offer.location,
-    popupNode: offer.title
-  }));
+  const handleChangeSort = useCallback((sortOption: SelectorOption['key']) => {
+    dispatch(setOffersSort(sortOption as OfferSortOption));
+  }, [dispatch]);
+
+  const handleChangeFavoriteStatus = useCallback((offerId: Offer['id'], status: FavoriteStatus) => {
+    if (isAuthorized) {
+      dispatch(changeFavoriteStatus({offerId, status}));
+    } else {
+      navigate('/' + RoutePath.LoginPage);
+    }
+  }, [navigate, dispatch, isAuthorized]);
 
   return (
     <>
@@ -41,7 +52,7 @@ export const PlacesContainer: FC = () => {
         <SelectorWidget
           options={sortOptions}
           activeOptionKey={sort}
-          onSelect={(sortOption) => setSort(sortOption)}
+          onSelect={handleChangeSort}
         >
           Sort by
         </SelectorWidget>
@@ -49,16 +60,14 @@ export const PlacesContainer: FC = () => {
           offers={offers}
           containerClassName="cities__places-list places__list tabs__content"
           onCardHover={handleOfferHover}
+          onChangeFavoriteStatus={handleChangeFavoriteStatus}
         />
       </section>
       <div className="cities__right-section">
-        <MapWidget
-          mapCenter={currentCity.location}
-          markers={markers}
-          activeMarkers={activeOfferId ? [activeOfferId] : []}
-          mapContainerClassName="cities__map map"
-        />
+        <MapWrapper/>
       </div>
     </>
   );
-};
+});
+
+PlacesContainer.displayName = 'PlacesContainer';

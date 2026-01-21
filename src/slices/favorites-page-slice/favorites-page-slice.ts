@@ -19,7 +19,7 @@ const initialState: FavoritePageState = {
   offersLoadingError: null,
 };
 
-export const loadFavorites = createAppThunk(`${ReducerName.favoritesPage }/loadFavorites`, async (_, thunkApi) => {
+export const loadFavorites = createAppThunk(ReducerName.favoritesPage + '/loadFavorites', async (_, thunkApi) => {
   try {
     const response = await thunkApi.extra.axios.get<OfferDto[]>(favoritesUrl.favorite);
     return response.data;
@@ -29,7 +29,7 @@ export const loadFavorites = createAppThunk(`${ReducerName.favoritesPage }/loadF
 });
 
 export const changeFavoriteStatus = createAppThunk(
-  `${ReducerName.favoritesPage }/changeFavoriteStatus`,
+  ReducerName.favoritesPage + '/changeFavoriteStatus',
   async ({offerId, status}: {offerId: Offer['id']; status: FavoriteStatus}, thunkApi) => {
     try {
       const response = await thunkApi.extra.axios.post<OfferExtendedDto>(favoritesUrl.setFavoriteStatus(offerId, status));

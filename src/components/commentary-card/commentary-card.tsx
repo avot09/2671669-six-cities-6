@@ -1,5 +1,5 @@
 import {FC} from 'react';
-import {Commentary} from '../../shared/entities/comments/types.ts';
+import {Commentary} from '../../shared/entities/commentary/types.ts';
 
 type CommentaryCardProps = {
   commentary: Commentary;

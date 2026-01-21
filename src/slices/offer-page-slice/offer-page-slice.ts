@@ -1,7 +1,7 @@
 import {createSlice} from '@reduxjs/toolkit';
 import {AxiosError} from 'axios';
-import {commentaryFromDto} from '../../shared/entities/comments/mappers.ts';
-import {AddCommentaryRequestBody, Commentary, CommentaryDto} from '../../shared/entities/comments/types.ts';
+import {commentaryFromDto} from '../../shared/entities/commentary/data-mappers.ts';
+import {AddCommentaryRequestBody, Commentary, CommentaryDto} from '../../shared/entities/commentary/types.ts';
 import {ErrorDto, ValidationErrorDto} from '../../shared/entities/error/types.ts';
 import {mapDtoToOffer} from '../../shared/entities/offer/data-mappers.ts';
 import {Offer, OfferDto, OfferExtendedDto} from '../../shared/entities/offer/types.ts';
@@ -47,7 +47,7 @@ const initialState: OffersPageState = {
   commentPostingError: null,
 };
 
-export const loadOffer = createAppThunk(`${ReducerName.offerPage }/loadOffer`, async (offerId: string, thunkApi) => {
+export const loadOffer = createAppThunk(ReducerName.offerPage + '/loadOffer', async (offerId: string, thunkApi) => {
   try {
     const response = await thunkApi.extra.axios.get<OfferExtendedDto>(offersUrl.offer(offerId));
     return response.data;
@@ -56,7 +56,7 @@ export const loadOffer = createAppThunk(`${ReducerName.offerPage }/loadOffer`, a
   }
 });
 
-export const loadNearbyOffers = createAppThunk(`${ReducerName.offerPage }/loadNearby`, async (offerId: string, thunkApi) => {
+export const loadNearbyOffers = createAppThunk(ReducerName.offerPage + '/loadNearby', async (offerId: string, thunkApi) => {
   try {
     const response = await thunkApi.extra.axios.get<OfferDto[]>(offersUrl.nearby(offerId));
     return response.data;
@@ -65,7 +65,7 @@ export const loadNearbyOffers = createAppThunk(`${ReducerName.offerPage }/loadNe
   }
 });
 
-export const loadComments = createAppThunk(`${ReducerName.offerPage }/loadComments`, async (offerId: string, thunkApi) => {
+export const loadComments = createAppThunk(ReducerName.offerPage + '/loadComments', async (offerId: string, thunkApi) => {
   try {
     const response = await thunkApi.extra.axios.get<CommentaryDto[]>(commentsUrl.comments(offerId));
     return response.data;
@@ -75,7 +75,7 @@ export const loadComments = createAppThunk(`${ReducerName.offerPage }/loadCommen
 });
 
 export const addComment = createAppThunk(
-  `${ReducerName.offerPage }/addComment`,
+  ReducerName.offerPage + '/addComment',
   async ({offerId, ...body}: AddCommentActionPayload, thunkApi) => {
     try {
       const response = await thunkApi.extra.axios.post<CommentaryDto>(

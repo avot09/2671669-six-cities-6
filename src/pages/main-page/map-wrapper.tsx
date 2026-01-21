@@ -1,29 +1,28 @@
-import React from 'react';
-import { MapWidget } from '../../components/map/map';
-import { DEFAULT_CITY } from '../../shared/entities/city/constant';
-import { Offer } from '../../shared/entities/offer/types';
-import { useAppSelector } from '../../shared/redux-helpers/typed-hooks';
+import React, {FC, useMemo} from 'react';
+import {MapWidget} from '../../components/map-widget/map-widget.tsx';
+import {PointOnMap} from '../../components/map-widget/model/types.ts';
+import {DEFAULT_CITY} from '../../shared/entities/city/constants.ts';
+import {useAppSelector} from '../../shared/redux-helpers/typed-hooks.ts';
 
-export const MapWrapper: React.FC = () => {
-  const cities = useAppSelector((state) => state.offers.cities);
-  const currentCity = useAppSelector((state) => state.offers.currentCity);
+export const MapWrapper: FC = React.memo(() => {
+  const currentCity = useAppSelector((state) => state.offers.cities[state.offers.currentCity]) ?? DEFAULT_CITY;
   const offers = useAppSelector((state) => state.offers.currentCityOffers);
   const activeOfferId = useAppSelector((state) => state.offers.activeOfferId);
 
-  const cityCoordinates = cities[currentCity]?.location ?? DEFAULT_CITY.location;
-
-  const markers = offers.map((offer: Offer) => ({
+  const markers: PointOnMap[] = useMemo(() => offers.map((offer) => ({
     id: offer.id,
     coordinates: offer.location,
-    popupNode: offer.title,
-  }));
+    popupNode: offer.title
+  })), [offers]);
 
   return (
     <MapWidget
-      mapCenter={cityCoordinates}
+      mapCenter={currentCity.location}
       markers={markers}
-      mapContainerClassName="cities__map"
       activeMarkers={activeOfferId ? [activeOfferId] : []}
+      mapContainerClassName="cities__map map"
     />
   );
-};
+});
+
+MapWrapper.displayName = 'MapWrapper';

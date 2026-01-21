@@ -1,19 +1,27 @@
 import {FC, MouseEventHandler} from 'react';
 import {Link} from 'react-router-dom';
-import {RoutePath} from '../../shared/enums/routes.ts';
 import {Offer} from '../../shared/entities/offer/types.ts';
+import {RoutePath} from '../../shared/enums/routes.ts';
+import {FavoriteStatus} from '../../shared/server/constants.ts';
+
 type OfferCardProps = {
   offer: Offer;
   onMouseEnter: MouseEventHandler<HTMLElement>;
+  onChangeFavoriteStatus?: (offerId: Offer['id'], status: FavoriteStatus) => void;
 }
 
-export const OfferCard: FC<OfferCardProps> = ({offer, onMouseEnter}) => {
-  const {title, type, rating, price, previewImage, isPremium, isFavorite} = offer;
+export const OfferCard: FC<OfferCardProps> = ({offer, onMouseEnter, onChangeFavoriteStatus}) => {
+  const {id, title, type, rating, price, previewImage, isPremium, isFavorite} = offer;
+  const roundedRating = Math.max(1, Math.min(5, Math.round(rating)));
 
   const bookmarkedClassList = ['place-card__bookmark-button', 'button'];
   if (isFavorite) {
     bookmarkedClassList.push('place-card__bookmark-button--active');
   }
+
+  const handleBookmarkClick = () => {
+    onChangeFavoriteStatus?.(id, isFavorite ? FavoriteStatus.NotFavorite : FavoriteStatus.Favorite);
+  };
 
   return (
     <article className="cities__card place-card" onMouseEnter={onMouseEnter}>
@@ -33,7 +41,7 @@ export const OfferCard: FC<OfferCardProps> = ({offer, onMouseEnter}) => {
             <b className="place-card__price-value">&euro;{price}</b>
             <span className="place-card__price-text">&#47;&nbsp;night</span>
           </div>
-          <button className={bookmarkedClassList.join(' ')} type="button">
+          <button className={bookmarkedClassList.join(' ')} type="button" onClick={handleBookmarkClick}>
             <svg className="place-card__bookmark-icon" width="18" height="19">
               <use xlinkHref="#icon-bookmark"></use>
             </svg>
@@ -42,7 +50,7 @@ export const OfferCard: FC<OfferCardProps> = ({offer, onMouseEnter}) => {
         </div>
         <div className="place-card__rating rating">
           <div className="place-card__stars rating__stars">
-            <span style={{width: `${20 * rating}%`}}></span>
+            <span style={{width: `${20 * roundedRating}%`}}></span>
             <span className="visually-hidden">Rating</span>
           </div>
         </div>
@@ -54,4 +62,3 @@ export const OfferCard: FC<OfferCardProps> = ({offer, onMouseEnter}) => {
     </article>
   );
 };
-

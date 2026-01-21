@@ -1,27 +1,45 @@
 import {FC, useCallback, useEffect} from 'react';
+import {useSearchParams} from 'react-router-dom';
 import {CityLinkList} from '../../components/city-link-list/city-link-list.tsx';
-import {loadOffers, setCity} from '../../slices/offers-slice/offers-slice.ts';
-import {useAppDispatch, useAppSelector} from '../../shared/redux-helpers/typed-hooks.ts';
+import {HeaderLogoLink} from '../../components/shared/header-logo-link/header-logo-link.tsx';
+import {HeaderUserInfo} from '../../components/shared/header-user-info/header-user-info.tsx';
 import {FullSpaceSpinner} from '../../components/spinner/full-space-spinner.tsx';
+import {CITY_SEARCH_PARAM} from '../../shared/entities/city/constants.ts';
+import {City} from '../../shared/entities/city/types.ts';
+import {isValidCity} from '../../shared/entities/city/utils.ts';
+import {useAppDispatch, useAppSelector} from '../../shared/redux-helpers/typed-hooks.ts';
+import {loadOffers, setCity} from '../../slices/offers-slice/offers-slice.ts';
+import {MainPageEmpty} from './main-page-empty.tsx';
 import {PlacesContainer} from './places-container.tsx';
 
 export const MainPage: FC = () => {
+  const [searchParams] = useSearchParams();
   const dispatch = useAppDispatch();
   const isLoading = useAppSelector((state) => state.offers.isOffersLoading);
+  const offers = useAppSelector((state) => state.offers.currentCityOffers);
   const cities = useAppSelector((state) => state.offers.cities);
   const currentCity = useAppSelector((state) => state.offers.currentCity);
 
-  const setActiveCity = (city: City) => {
-    dispatch(setCity(city));
+  const showEmpty = !isLoading && offers.length === 0;
 
-    const cityName = city.name;
-    const newOffers = initialOffers.filter((offer) => offer.city === cityName);
-    dispatch(setOffers(newOffers));
-  };
+  const setActiveCity = useCallback((city: City) => {
+    dispatch(setCity(city.name));
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(loadOffers());
+
+    const cityFromSp = searchParams.get(CITY_SEARCH_PARAM);
+    if (cityFromSp && isValidCity(cityFromSp)) {
+      dispatch(setCity(cityFromSp));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const mainClassList = ['page__main', 'page__main--index'];
+  if (showEmpty) {
+    mainClassList.push('page__main--index-empty');
+  }
 
   return (
     <div className="page page--gray page--main">
@@ -29,41 +47,26 @@ export const MainPage: FC = () => {
         <div className="container">
           <div className="header__wrapper">
             <div className="header__left">
-              <a className="header__logo-link header__logo-link--active">
-                <img className="header__logo" src="img/logo.svg" alt="6 cities logo" width="81" height="41"/>
-              </a>
+              <HeaderLogoLink/>
             </div>
-            <nav className="header__nav">
-              <ul className="header__nav-list">
-                <li className="header__nav-item user">
-                  <a className="header__nav-link header__nav-link--profile" href="#">
-                    <div className="header__avatar-wrapper user__avatar-wrapper">
-                    </div>
-                    <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
-                    <span className="header__favorite-count">3</span>
-                  </a>
-                </li>
-                <li className="header__nav-item">
-                  <a className="header__nav-link" href="#">
-                    <span className="header__signout">Sign out</span>
-                  </a>
-                </li>
-              </ul>
-            </nav>
+            <HeaderUserInfo/>
           </div>
         </div>
       </header>
-      <main className="page__main page__main--index">
+
+      <main className={mainClassList.join(' ')}>
         <h1 className="visually-hidden">Cities</h1>
         <div className="tabs">
           <section className="locations container">
-            <CityLinkList cities={cities} activeCity={currentCity} onCityClick={setActiveCity}/>
+            <CityLinkList cities={cities} activeCityName={currentCity} onCityClick={setActiveCity}/>
           </section>
         </div>
         <div className="cities">
-          <div className="cities__places-container container">
-            {isLoading ? <FullSpaceSpinner/> : <PlacesContainer/>}
-          </div>
+          {showEmpty ? <MainPageEmpty/> : (
+            <div className="cities__places-container container">
+              {isLoading ? <FullSpaceSpinner/> : <PlacesContainer/>}
+            </div>
+          )}
         </div>
       </main>
     </div>
